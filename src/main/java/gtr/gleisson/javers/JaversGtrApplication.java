@@ -3,7 +3,9 @@ package gtr.gleisson.javers;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -215,11 +217,11 @@ class Phone implements Serializable {
 // @Repository
 // @RepositoryRestController()
 // @RepositoryRestResource(path = "person")
-@JaversSpringDataAuditable
+//@JaversSpringDataAuditable
 interface PersonRepo extends CrudRepository<Person, String> {
 }
 
-@JaversSpringDataAuditable
+//@JaversSpringDataAuditable
 interface PhoneRepo extends CrudRepository<Phone, String> {
 }
 
@@ -227,10 +229,6 @@ interface PhoneRepo extends CrudRepository<Phone, String> {
 @RequestMapping("/person")
 class WelcomeController {
 	PersonRepo personRepo;
-
-	public WelcomeController(PersonRepo personRepo) {
-		this.personRepo = personRepo;
-	}
 
 	@GetMapping("/")
 	public Iterable<Person> getPerson() {
@@ -242,9 +240,26 @@ class WelcomeController {
 		return personRepo.findOne(id);
 	}
 
+	private final Javers javers;
+	
+	@Autowired
+    public WelcomeController(Javers javers, PersonRepo personRepo) {
+        this.javers = javers;
+        this.personRepo = personRepo;        
+//        this.hierarchyRepository = hierarchyRepository;
+//        this.personRepository = personRepository;
+    }
+	
 	@PutMapping("/")
 	public Person update(@RequestBody Person person) {
-		return personRepo.save(person);
+
+		Map<String, String> params = new HashMap<>();
+		params.put("comment", "My custom comment");
+						
+		javers.commit("qwerqwer", person, params);
+		person = personRepo.save(person);
+		
+		return person;
 	}
 
 	@PostMapping("/")
