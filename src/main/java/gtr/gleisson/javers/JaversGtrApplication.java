@@ -217,11 +217,11 @@ class Phone implements Serializable {
 // @Repository
 // @RepositoryRestController()
 // @RepositoryRestResource(path = "person")
-//@JaversSpringDataAuditable
+@JaversSpringDataAuditable
 interface PersonRepo extends CrudRepository<Person, String> {
 }
 
-//@JaversSpringDataAuditable
+@JaversSpringDataAuditable
 interface PhoneRepo extends CrudRepository<Phone, String> {
 }
 
@@ -254,9 +254,9 @@ class WelcomeController {
 	public Person update(@RequestBody Person person) {
 
 		Map<String, String> params = new HashMap<>();
-		params.put("comment", "My custom comment");
+		params.put("COMENTÁRIO", "Comentário customizado: " + person.getName());
 						
-		javers.commit("qwerqwer", person, params);
+		javers.commit("AUTHOR_LOGIN", person, params);
 		person = personRepo.save(person);
 		
 		return person;
@@ -309,6 +309,20 @@ class AuditController {
 		this.javers = javers;
 	}
 
+	/*
+	 * PARA HABILITAR MODO AUTOMATICO:
+	 * @JaversSpringDataAuditable no repository
+	 * 
+	 * 
+	 * PARA HABILITAR MODO MANUAL:
+	 *  Acrescentar implementacao manual na transacao
+	 * 
+	 *  Map<String, String> params = new HashMap<>();
+	 *	params.put("COMENTÁRIO", "Comentário customizado: " + person.getName());
+	 *	javers.commit("AUTHOR_LOGIN", person, params);
+	 * 
+	 */
+	
 	@GetMapping(value = "/person", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public String getPersonChanges() {
 		findGrouped();
@@ -330,6 +344,10 @@ class AuditController {
 			System.out.println("COMMIT ID: " + byCommit.getCommit().getId());
 			System.out.println("AUTOR: " + byCommit.getCommit().getAuthor());
 			System.out.println("DATA: " + byCommit.getCommit().getCommitDate());
+			System.out.println("##########CUSTOM PROPERTIES##########");
+			byCommit.getCommit().getProperties().forEach((k, v) -> System.out.println((k + " : " + v)));
+			System.out.println("#####################################");
+			
 			// for (Change changeByCommit : byCommit.get()) {
 			// System.out.println("TIPO DA MUDANÇA:
 			// "+changeByCommit.getClass().getSimpleName());
